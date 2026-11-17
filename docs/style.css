@@ -104,3 +104,11 @@ code { display: block; font: .65rem/1.6 'IBM Plex Mono', monospace; overflow-wra
   .page-header { font-size: .75rem; }
 }
 @media (prefers-reduced-motion: reduce) { .scale i { transition: none; } }
+
+[hidden] { display: none !important; }
+.browser-notice { margin-top: 1.4rem; padding: 1rem 1.2rem; border: 1px solid #89978a; border-left: 5px solid #46644d; background: #e4e8dc; }
+.browser-notice.warning { border-left-color: #8c4c19; background: #f1e3c6; }
+.browser-notice h2 { font: 600 1.3rem 'Barlow Condensed', sans-serif; margin: 0; }
+.browser-notice p { margin: .4rem 0 .8rem; }
+.browser-notice code { overflow-wrap: anywhere; }
+.browser-notice .button { margin-top: .8rem; }

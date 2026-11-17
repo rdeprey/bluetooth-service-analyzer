@@ -60,7 +60,7 @@ export class Analyzer {
       advertisementStatus: 'Choose a device to listen for advertisements.',
       serviceStatus: 'Connect to inspect permitted primary services.',
       message: 'Set the device filter, then choose a device.', requested: [],
-      watching: false, advertisementSupported: false, battery: null
+      watching: false, advertisementSupported: false, battery: null, bluetoothBlocked: false
     };
     this.changed(this.state);
   }
@@ -97,7 +97,12 @@ export class Analyzer {
       }, { signal: this.listenerController.signal });
       this.publish('Device selected. Listen for advertisements or connect to inspect services.');
     } catch (error) {
-      if (revision === this.revision) this.publish(explain(error, 'choose'));
+      if (revision === this.revision) {
+        this.state.bluetoothBlocked = /bluetooth.*globally disabled/i.test(error.message || '');
+        this.publish(this.state.bluetoothBlocked
+          ? 'Web Bluetooth is disabled in this browser. See the browser support notice above.'
+          : explain(error, 'choose'));
+      }
     } finally {
       if (revision === this.revision) {
         this.state.busy = false;

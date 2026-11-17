@@ -18,6 +18,11 @@
       <div><p class="eyebrow">Bluetooth Low Energy / browser instrument</p><h1>Service Analyzer</h1></div>
       <div class="power"><span class="lamp" aria-hidden="true"></span> Web Bluetooth</div>
     </header>
+    <section id="browser-notice" class="browser-notice" aria-labelledby="support-title">
+      <div role="status"><h2 id="support-title">Checking browser support…</h2><p id="support"></p></div>
+      <details><summary>Using Brave?</summary><p>Brave desktop disables Web Bluetooth by default. To enable it, open <code>brave://flags/#brave-web-bluetooth-api</code>, select Enabled, and relaunch Brave. Advertisement listening may still be unavailable.</p></details>
+      <button type="button" id="try-sample" class="button compact">Try sample device</button>
+    </section>
     <div class="instrument-body">
       <section class="controls">
         <h2>Input &amp; controls</h2>
@@ -26,7 +31,6 @@
           <div><input type="radio" id="real" name="source" value="real" checked><label for="real">Your device</label></div>
           <div><input type="radio" id="sample" name="source" value="sample"><label for="sample">Sample device</label></div>
         </fieldset>
-        <p id="support" class="help">Checking browser support…</p>
         <fieldset id="options">
           <legend>Device filter</legend>
           <div><input type="radio" name="filter" id="all" value="all" checked><label for="all">All nearby BLE devices</label></div>
@@ -76,7 +80,7 @@
             <p class="channel-caption">Discovered after connecting</p>
             <p id="service-status">Connect to inspect permitted primary services.</p>
             <div id="accessible"></div>
-            <div class="battery-readout">
+            <div id="battery-controls" class="battery-readout" hidden>
               <button type="button" id="read-battery" class="button compact" disabled>Read battery</button>
               <output id="battery-value" aria-label="Battery level">—</output>
             </div>
