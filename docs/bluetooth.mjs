@@ -9,9 +9,40 @@ export const names = new Map([
   ['180f', 'Battery Service'], ['180a', 'Device Information'],
   ['180d', 'Heart Rate'], ['181a', 'Environmental Sensing'],
   ['2a19', 'Battery Level'], ['2a29', 'Manufacturer Name'],
-  ['2a24', 'Model Number'], ['2a37', 'Heart Rate Measurement'], ['2a6e', 'Temperature']
+  ['2a24', 'Model Number'], ['2a23', 'System ID'], ['2a25', 'Serial Number'],
+  ['2a26', 'Firmware Revision'], ['2a27', 'Hardware Revision'], ['2a28', 'Software Revision'],
+  ['2a50', 'PnP ID'], ['2a37', 'Heart Rate Measurement'], ['2a6e', 'Temperature']
 ].map(([id, name]) => [uuid(id), name]));
 export const serviceName = id => names.get(id) || 'Custom / unrecognized service';
+
+// Standard meanings: Bluetooth SIG Device Information Service and Assigned Numbers.
+// https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/DIS_v1.2/out/en/index-en.html
+export const characteristicDescriptions = new Map([
+  ['2a23', 'An identifier combining a manufacturer identifier and an organizationally unique identifier.'],
+  ['2a24', 'The manufacturer’s model number for this device.'],
+  ['2a25', 'The manufacturer’s serial number for this individual device.'],
+  ['2a26', 'The version of the firmware running on the device.'],
+  ['2a27', 'The revision of the device’s physical hardware.'],
+  ['2a28', 'The version of the software within the device.'],
+  ['2a29', 'The name of the device’s manufacturer.'],
+  ['2a50', 'Vendor ID source, vendor ID, product ID, and product version used to identify the product. This is structured data, not a text name.'],
+  ['2a19', 'The battery charge level, expressed as a percentage from 0 to 100.'],
+  ['2a37', 'Heart-rate measurements, with optional sensor-contact, energy, and beat-interval information.'],
+  ['2a6e', 'A temperature measurement in degrees Celsius.']
+].map(([id, description]) => [uuid(id), description]));
+export function characteristicDescription(id) {
+  return characteristicDescriptions.get(id) || 'This UUID is not in the demo’s reference table. It may be a standard characteristic not listed here or a manufacturer-specific one; its meaning requires the relevant specification or device documentation.';
+}
+export function describeOperations(operations) {
+  const descriptions = {
+    read: 'Read: request its current value',
+    write: 'Write: send a value with a response',
+    writeWithoutResponse: 'Write without response: send a value without a response',
+    notify: 'Notify: subscribe to updates without confirming each one',
+    indicate: 'Indicate: subscribe to updates confirmed by the client'
+  };
+  return operations.map(operation => descriptions[operation] || operation).join(' · ') || 'No supported operations reported.';
+}
 
 export function requestOptions(filter, custom) {
   const extra = custom.trim() ? custom.split(/[\s,]+/).filter(Boolean).map(uuid) : [];
@@ -171,7 +202,13 @@ export class Analyzer {
         return;
       }
       this.state.connection = 'Connected';
-      const services = await server.getPrimaryServices();
+      let services;
+      try {
+        services = await server.getPrimaryServices();
+      } catch (error) {
+        if (error.name !== 'NotFoundError') throw error;
+        services = [];
+      }
       if (!server.connected) throw new DOMException("Device disconnected during discovery", "NetworkError");
       for (const service of services) {
         if (revision !== this.revision) return;
@@ -191,8 +228,10 @@ export class Analyzer {
       }
       this.state.serviceStatus = services.length
         ? 'Primary services returned by this connection, within this site’s permissions.'
-        : 'No permitted primary services returned. This is not a complete device inventory.';
-      this.publish('Service inspection finished. Expand a service to inspect its characteristics.');
+        : 'Connected, but no services are accessible with this site’s current permissions. The device may use other service UUIDs. If its documentation lists them, add them under Service permissions, choose the device again, then reconnect. This result does not prove the device has no services.';
+      this.publish(services.length
+        ? 'Service inspection finished. Expand a service to inspect its characteristics.'
+        : 'Connected, but no accessible services were found. See the guidance below.');
     } catch (error) {
       if (revision !== this.revision) return;
       this.state.connection = device.gatt?.connected ? 'Connected' : 'Disconnected';

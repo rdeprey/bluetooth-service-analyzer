@@ -1,5 +1,5 @@
 import { browserSupport, canReadBattery } from './support.mjs';
-import { Analyzer, requestOptions, serviceName, names, uuid } from './bluetooth.mjs';
+import { Analyzer, requestOptions, serviceName, names, uuid, characteristicDescription, describeOperations } from './bluetooth.mjs';
 import { sampleBluetooth } from './sample.mjs';
 
 const el = id => document.getElementById(id);
@@ -67,9 +67,10 @@ function render(state) {
       for (const characteristic of service.characteristics) {
         const section = text('div', '', 'characteristic');
         section.append(
-          text('strong', names.get(characteristic.uuid) || 'Characteristic'),
+          text('strong', names.get(characteristic.uuid) || 'Unidentified characteristic'),
           text('code', characteristic.uuid),
-          text('p', characteristic.operations.join(' · ') || 'No listed operations')
+          text('p', characteristicDescription(characteristic.uuid)),
+          text('p', describeOperations(characteristic.operations), 'characteristic-operations')
         );
         row.append(section);
       }

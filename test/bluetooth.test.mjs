@@ -104,3 +104,17 @@ test('an empty advertisement means a packet arrived, without visible service UUI
   assert.deepEqual(analyzer.state.accessible, []);
   analyzer.reset();
 });
+
+test('no permitted services leaves a successful connection with actionable guidance', async () => {
+  const bluetooth = sampleBluetooth();
+  const device = await bluetooth.requestDevice(requestOptions('all', ''));
+  device.gatt.getPrimaryServices = async () => { throw new DOMException('No Services found in device.', 'NotFoundError'); };
+  const analyzer = new Analyzer({ requestDevice: async () => device });
+  await analyzer.choose(requestOptions('all', ''));
+  await analyzer.connect();
+  assert.equal(analyzer.state.connection, 'Connected');
+  assert.deepEqual(analyzer.state.accessible, []);
+  assert.match(analyzer.state.serviceStatus, /current permissions/);
+  assert.match(analyzer.state.message, /no accessible services/);
+  analyzer.reset();
+});
