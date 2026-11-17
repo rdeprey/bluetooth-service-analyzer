@@ -40,8 +40,6 @@ function render(state) {
   el('advertised-count').textContent = state.packets ? String(state.advertised.length).padStart(2, '0') : '—';
   el('accessible-count').textContent = state.connection === 'Connected' && !state.busy ? String(state.accessible.length).padStart(2, '0') : '—';
   el('packets').textContent = state.packets ? state.packets + ' packets · last ' + state.lastSeen : 'No packets received';
-  el('rssi').textContent = state.rssi === null ? 'No signal measurement' : state.rssi + ' dBm';
-  el('needle').style.setProperty('--signal', state.rssi === null ? '0%' : Math.max(0, Math.min(100, (state.rssi + 100) / 80 * 100)) + '%');
   el('battery-value').textContent = state.battery === null ? '—' : state.battery + '%';
   el('session-note').textContent = sample ? 'Sample mode · generated readings' : 'Select → listen → connect → inspect';
 

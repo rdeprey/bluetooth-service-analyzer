@@ -89,7 +89,7 @@ export class Analyzer {
     this.watchController = null;
     this.state = {
       name: 'No device selected', connection: 'Idle', busy: false,
-      advertised: [], accessible: [], packets: 0, rssi: null, lastSeen: null,
+      advertised: [], accessible: [], packets: 0, lastSeen: null,
       advertisementStatus: 'Choose a device to listen for advertisements.',
       serviceStatus: 'Connect to inspect permitted primary services.',
       message: 'Set the device filter, then choose a device.', requested: [],
@@ -167,7 +167,6 @@ export class Analyzer {
       for (const id of event.uuids || []) observed.add(uuid(id));
       this.state.advertised = [...observed];
       this.state.packets++;
-      this.state.rssi = Number.isFinite(event.rssi) ? event.rssi : null;
       this.state.lastSeen = new Date().toLocaleTimeString();
       this.state.advertisementStatus = observed.size
         ? 'Service UUIDs observed in advertisements during this session.'

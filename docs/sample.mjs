@@ -49,7 +49,7 @@ export function sampleBluetooth() {
         const send = () => {
           if (signal.aborted) return;
           const event = new Event('advertisementreceived');
-          Object.assign(event, { uuids: permissions.has(uuid('180f')) ? [uuid('180f')] : [], rssi: -57 });
+          Object.assign(event, { uuids: permissions.has(uuid('180f')) ? [uuid('180f')] : [] });
           device.dispatchEvent(event);
         };
         send();
