@@ -79,7 +79,7 @@
             <div class="channel-heading"><h2>Accessible services</h2><span id="accessible-count" class="count">—</span></div>
             <p class="channel-caption">Discovered after connecting</p>
             <p id="service-status">Connect to inspect permitted primary services.</p>
-            <p class="footnote">Services group related functions. Characteristics are individual data fields or controls. The descriptions below explain their standard meanings; they are not values read from your device. Operation flags describe capabilities, not guaranteed permission.</p>
+            <p class="footnote">Services group related functions. Characteristics are individual data fields or controls. The descriptions below explain their standard meanings; use Read value to fetch a value from your device. Operation flags describe capabilities, not guaranteed permission.</p>
             <div id="accessible"></div>
             <div id="battery-controls" class="battery-readout" hidden>
               <button type="button" id="read-battery" class="button compact" disabled>Read battery</button>
@@ -102,7 +102,7 @@
         <li>Connect to discover accessible services. Expand a service for its characteristics and supported operations.</li>
         <li>Read the battery if Battery Service appears. A connection can succeed even when that service is unavailable.</li>
       </ol>
-      <p>This page inspects service metadata and reads the battery on request. Service visibility can also be restricted by the browser’s Bluetooth blocklist. Canceling the picker, receiving no advertisements, and finding no accessible services are different outcomes.</p>
+      <p>This page inspects service metadata and reads individual values only when you request them. Known formats are decoded; raw bytes are available for inspection. Service visibility can also be restricted by the browser’s Bluetooth blocklist. Canceling the picker, receiving no advertisements, and finding no accessible services are different outcomes.</p>
     </details>
   </footer>
   <noscript>This analyzer needs JavaScript to use the browser’s Bluetooth API.</noscript>

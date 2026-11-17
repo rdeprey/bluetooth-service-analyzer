@@ -4,7 +4,7 @@ A browser-based BLE inspector styled like a vintage electronic bench instrument.
 
 [Open the analyzer](https://rdeprey.github.io/bluetooth-service-analyzer/)
 
-Choose a device, listen for advertisements, then connect to inspect accessible primary GATT services and their characteristics. A dedicated button reads Battery Level when Battery Service is accessible.
+Choose a device, listen for advertisements, then connect to inspect accessible primary GATT services and their characteristics. Each readable characteristic has a Read value button. Device Information strings, Battery Level, and PnP ID are decoded; all results also expose raw hexadecimal bytes. Unknown formats remain raw. Values are read only on request, with errors shown beside the characteristic. A dedicated battery shortcut appears only when a readable Battery Level characteristic is found.
 
 ## Try it
 

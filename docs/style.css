@@ -110,5 +110,9 @@ code { display: block; font: .65rem/1.6 'IBM Plex Mono', monospace; overflow-wra
 .browser-notice.warning { border-left-color: #8c4c19; background: #f1e3c6; }
 .browser-notice h2 { font: 600 1.3rem 'Barlow Condensed', sans-serif; margin: 0; }
 .browser-notice p { margin: .4rem 0 .8rem; }
-.browser-notice code { overflow-wrap: anywhere; }
+.browser-notice code { display: inline; font-size: .9em; overflow-wrap: anywhere; }
 .browser-notice .button { margin-top: .8rem; }
+
+.characteristic .button { margin-block: .5rem; }
+.characteristic .characteristic-value { white-space: pre-wrap; overflow-wrap: anywhere; font: .8rem/1.6 "IBM Plex Mono", monospace; }
+.characteristic .read-error { color: #7b2b16; }

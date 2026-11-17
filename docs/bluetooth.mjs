@@ -1,3 +1,4 @@
+import { decodeValue } from './values.mjs';
 export function uuid(value) {
   const text = String(value).trim().toLowerCase();
   if (/^(?:0x)?[0-9a-f]{4}$/.test(text)) return '0000' + text.replace(/^0x/, '') + '-0000-1000-8000-00805f9b34fb';
@@ -84,6 +85,7 @@ export class Analyzer {
     clearTimeout(this.timer);
     this.device?.gatt?.disconnect();
     this.device = null;
+    this.readHandles = new Map();
     this.watchController = null;
     this.state = {
       name: 'No device selected', connection: 'Idle', busy: false,
@@ -91,7 +93,7 @@ export class Analyzer {
       advertisementStatus: 'Choose a device to listen for advertisements.',
       serviceStatus: 'Connect to inspect permitted primary services.',
       message: 'Set the device filter, then choose a device.', requested: [],
-      watching: false, advertisementSupported: false, battery: null, bluetoothBlocked: false
+      watching: false, advertisementSupported: false, battery: null, bluetoothBlocked: false, readings: {}, readingKey: null
     };
     this.changed(this.state);
   }
@@ -122,6 +124,8 @@ export class Analyzer {
         if (revision !== this.revision) return;
         this.state.connection = 'Disconnected';
         this.state.accessible = [];
+        this.readHandles.clear();
+        this.state.readings = {};
         this.state.battery = null;
         this.state.serviceStatus = 'Connection ended. Reconnect to inspect services again.';
         this.publish('Device disconnected. Previously observed advertisements remain in the log.');
@@ -191,6 +195,8 @@ export class Analyzer {
     this.state.busy = true;
     this.state.battery = null;
     this.state.accessible = [];
+    this.readHandles.clear();
+    this.state.readings = {};
     this.state.connection = 'Connecting';
     this.state.serviceStatus = 'Inspecting permitted primary services…';
     this.publish('Connecting to the device’s GATT server…');
@@ -215,10 +221,14 @@ export class Analyzer {
         const entry = { uuid: service.uuid, characteristics: [], error: '' };
         try {
           const characteristics = await service.getCharacteristics();
-          entry.characteristics = characteristics.map(c => ({
-            uuid: c.uuid,
-            operations: ['read', 'write', 'writeWithoutResponse', 'notify', 'indicate'].filter(key => c.properties[key])
-          }));
+          entry.characteristics = characteristics.map((c, index) => {
+            const key = `${this.state.accessible.length}:${index}`;
+            this.readHandles.set(key, c);
+            return {
+              key, uuid: c.uuid,
+              operations: ['read', 'write', 'writeWithoutResponse', 'notify', 'indicate'].filter(key => c.properties[key])
+            };
+          });
         } catch (error) {
           entry.error = explain(error, 'characteristics');
         }
@@ -240,6 +250,33 @@ export class Analyzer {
     } finally {
       if (revision === this.revision) {
         this.state.busy = false;
+        this.publish();
+      }
+    }
+  }
+  async readCharacteristic(key) {
+    const characteristic = this.readHandles.get(key);
+    if (this.state.busy || !this.device?.gatt?.connected || !characteristic?.properties.read) return;
+    const revision = this.revision;
+    const current = () => revision === this.revision && this.readHandles.get(key) === characteristic;
+    this.state.busy = true;
+    this.state.readingKey = key;
+    this.state.readings[key] = { formatted: 'Reading…', hex: '' };
+    this.publish('Reading characteristic…');
+    try {
+      const value = await characteristic.readValue();
+      if (!current() || !this.device?.gatt?.connected) return;
+      this.state.readings[key] = decodeValue(characteristic.uuid, value);
+      if (characteristic.uuid === uuid('2a19') && value.byteLength === 1 && value.getUint8(0) <= 100) this.state.battery = value.getUint8(0);
+      this.publish('Characteristic value read. Results stay in this tab.');
+    } catch (error) {
+      if (!current()) return;
+      this.state.readings[key] = { formatted: explain(error, 'read'), hex: '', error: true };
+      this.publish('Read failed. See the characteristic for details; you can retry.');
+    } finally {
+      if (revision === this.revision) {
+        this.state.busy = false;
+        this.state.readingKey = null;
         this.publish();
       }
     }

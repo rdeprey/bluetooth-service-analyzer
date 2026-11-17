@@ -9,14 +9,19 @@ export function sampleBluetooth() {
       const permissions = new Set(options.optionalServices);
       const definitions = [
         ['180f', [['2a19', { read: true, notify: true }]]],
-        ['180a', [['2a29', { read: true }]]]
+        ['180a', [['2a29', { read: true }], ['2a26', { read: true }], ['2a50', { read: true }]]]
       ];
       const services = definitions.map(([id, characteristics]) => ({
         uuid: uuid(id),
         async getCharacteristics() {
           return characteristics.map(([id, properties]) => ({
             uuid: uuid(id), properties,
-            async readValue() { return new DataView(Uint8Array.of(76).buffer); }
+            async readValue() {
+              const bytes = id === '2a19' ? Uint8Array.of(76)
+                : id === '2a50' ? Uint8Array.of(2, 0x34, 0x12, 0x78, 0x56, 0, 1)
+                : new TextEncoder().encode(id === '2a26' ? '1.2.3 (sample)' : 'Sample Instruments');
+              return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+            }
           }));
         },
         async getCharacteristic(id) {

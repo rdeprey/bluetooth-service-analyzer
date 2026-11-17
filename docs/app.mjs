@@ -6,6 +6,7 @@ const el = id => document.getElementById(id);
 let sample = false;
 let renderedServices = '';
 let renderedAdvertisements = '';
+const readControls = new Map();
 let available;
 const policy = document.permissionsPolicy || document.featurePolicy;
 const policyAllowed = !policy?.allowsFeature || policy.allowsFeature('bluetooth');
@@ -57,6 +58,7 @@ function render(state) {
   const services = JSON.stringify(state.accessible);
   if (services !== renderedServices) {
     renderedServices = services;
+    readControls.clear();
     el('accessible').replaceChildren(...state.accessible.map(service => {
       const row = document.createElement('details');
       row.className = 'service';
@@ -72,11 +74,35 @@ function render(state) {
           text('p', characteristicDescription(characteristic.uuid)),
           text('p', describeOperations(characteristic.operations), 'characteristic-operations')
         );
+        if (characteristic.operations.includes('read')) {
+          const button = text('button', 'Read value', 'button compact');
+          button.type = 'button';
+          button.setAttribute('aria-label', `Read ${names.get(characteristic.uuid) || characteristic.uuid}`);
+          button.addEventListener('click', () => void analyzer.readCharacteristic(characteristic.key));
+          const output = text('p', 'Not read yet.', 'characteristic-value');
+          output.setAttribute('role', 'status');
+          const raw = document.createElement('details');
+          raw.append(text('summary', 'Raw bytes (hex)'));
+          const bytes = text('code', '');
+          raw.append(bytes);
+          raw.hidden = true;
+          section.append(button, output, raw);
+          readControls.set(characteristic.key, { button, output, raw, bytes });
+        }
         row.append(section);
       }
       if (!service.error && !service.characteristics.length) row.append(text('p', 'No accessible characteristics returned.'));
       return row;
     }));
+  }
+  for (const [key, control] of readControls) {
+    control.button.disabled = state.busy || state.connection !== 'Connected';
+    control.button.textContent = state.readingKey === key ? 'Reading…' : 'Read value';
+    const result = state.readings[key];
+    control.output.textContent = result?.formatted || 'Not read yet.';
+    control.output.classList.toggle('read-error', !!result?.error);
+    control.raw.hidden = !result?.hex;
+    control.bytes.textContent = result?.hex || '';
   }
 }
 let analyzer;
