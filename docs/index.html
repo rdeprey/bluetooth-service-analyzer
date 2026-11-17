@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inspect the advertised and accessible services of a Bluetooth Low Energy device in your browser.">
+  <title>Bluetooth Service Analyzer</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="page-header">
+    <a href="https://rebeccamdeprey.com">Rebecca M. Deprey</a>
+    <a href="https://github.com/rdeprey/bluetooth-service-analyzer">Source &amp; instructions ↗</a>
+  </header>
+  <main class="instrument">
+    <div class="screw top-left" aria-hidden="true"></div><div class="screw top-right" aria-hidden="true"></div>
+    <header class="faceplate">
+      <div><p class="eyebrow">Bluetooth Low Energy / browser instrument</p><h1>Service Analyzer</h1></div>
+      <div class="power"><span class="lamp" aria-hidden="true"></span> Web Bluetooth</div>
+    </header>
+    <div class="instrument-body">
+      <section class="controls">
+        <h2>Input &amp; controls</h2>
+        <fieldset class="source">
+          <legend>Signal source</legend>
+          <div><input type="radio" id="real" name="source" value="real" checked><label for="real">Your device</label></div>
+          <div><input type="radio" id="sample" name="source" value="sample"><label for="sample">Sample device</label></div>
+        </fieldset>
+        <p id="support" class="help">Checking browser support…</p>
+        <fieldset id="options">
+          <legend>Device filter</legend>
+          <div><input type="radio" name="filter" id="all" value="all" checked><label for="all">All nearby BLE devices</label></div>
+          <div><input type="radio" name="filter" id="battery-filter" value="battery"><label for="battery-filter">Advertises Battery Service</label></div>
+          <details class="permissions">
+            <summary>Service permissions</summary>
+            <p class="help">Request Battery, Device Information, Heart Rate, and Environmental Sensing. The browser can retain permissions from earlier selections.</p>
+            <label for="custom">Additional service UUIDs</label>
+            <textarea id="custom" rows="2" spellcheck="false" autocapitalize="none" aria-describedby="uuid-help" placeholder="e.g. 12345678-1234-5678-1234-56789abcdef0"></textarea>
+            <p id="uuid-help" class="help">Separate UUIDs with commas or spaces. Choose the device again to request access to additional services.</p>
+          </details>
+        </fieldset>
+        <button type="button" id="choose" class="button primary">Choose device</button>
+        <div class="button-pair">
+          <button type="button" id="listen" class="button" disabled>Listen</button>
+          <button type="button" id="connect" class="button" disabled>Connect</button>
+        </div>
+        <div class="button-pair">
+          <button type="button" id="disconnect" class="button" disabled>Disconnect</button>
+          <button type="button" id="reset" class="button">Reset</button>
+        </div>
+        <div class="meter">
+          <h3>Last received signal</h3>
+          <div class="scale" aria-hidden="true"><i id="needle"></i></div>
+          <div class="scale-labels" aria-hidden="true"><span>−100</span><span>−60</span><span>−20</span></div>
+          <p id="rssi">No advertisement yet</p>
+        </div>
+        <p class="help privacy">Measurements stay in this tab. Device communication uses your browser’s Bluetooth permission prompt.</p>
+      </section>
+      <div class="readouts">
+        <section class="display">
+          <div class="display-top"><span id="source-label">Live device</span><span id="connection">Idle</span></div>
+          <h2 id="device-name">No device selected</h2>
+          <p id="status" role="status">Set the device filter, then choose a device.</p>
+        </section>
+        <div class="channels">
+          <section class="channel">
+            <div class="channel-heading"><h2>Advertised services</h2><span id="advertised-count" class="count">—</span></div>
+            <p class="channel-caption">Observed over the air</p>
+            <p id="ad-status">Choose a device to listen for advertisements.</p>
+            <ul id="advertised" class="service-list"></ul>
+            <p id="packets" class="telemetry">No packets received</p>
+            <p class="footnote">Visible UUIDs accumulate while listening. Advertisements and browser permissions can each limit this list.</p>
+          </section>
+          <section class="channel">
+            <div class="channel-heading"><h2>Accessible services</h2><span id="accessible-count" class="count">—</span></div>
+            <p class="channel-caption">Discovered after connecting</p>
+            <p id="service-status">Connect to inspect permitted primary services.</p>
+            <div id="accessible"></div>
+            <div class="battery-readout">
+              <button type="button" id="read-battery" class="button compact" disabled>Read battery</button>
+              <output id="battery-value" aria-label="Battery level">—</output>
+            </div>
+            <p class="footnote">Results reflect this site’s granted services. A missing entry alone cannot establish that the device lacks it.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+    <footer class="instrument-footer"><span>BLE / GATT</span><span id="session-note">Select → listen → connect → inspect</span></footer>
+    <div class="screw bottom-left" aria-hidden="true"></div><div class="screw bottom-right" aria-hidden="true"></div>
+  </main>
+  <footer class="page-footer">
+    <p>Web Bluetooth works with BLE GATT services. Browser and operating-system support vary.</p>
+    <details><summary>How to read the instrument</summary>
+      <ol>
+        <li>Choose your device. Try the sample device to explore with simulated readings.</li>
+        <li>Listen before connecting. Some devices stop advertising while connected. If advertisement watching is unavailable, you can still try Connect.</li>
+        <li>Connect to discover accessible services. Expand a service for its characteristics and supported operations.</li>
+        <li>Read the battery if Battery Service appears. A connection can succeed even when that service is unavailable.</li>
+      </ol>
+      <p>This page inspects service metadata and reads the battery on request. Service visibility can also be restricted by the browser’s Bluetooth blocklist. Canceling the picker, receiving no advertisements, and finding no accessible services are different outcomes.</p>
+    </details>
+  </footer>
+  <noscript>This analyzer needs JavaScript to use the browser’s Bluetooth API.</noscript>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>
